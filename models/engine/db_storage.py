@@ -75,17 +75,14 @@ class DBStorage:
         """call remove() method on the private session attribute"""
         self.__session.remove()
 
-         def get(self, cls, id):
-        '''method to retrieve one object'''
-        if cls and id:
-            tempo = cls, __name__ + "." + id
-            count = self.all(cls)
-            for key in count:
-                if key == tempo:
-                    return count[key]
-        else:
+    def get(self, cls, id):
+        """Method to retrieve one specific object"""
+        key = cls.__name__ + "." + id
+        try:
+            return self.all()[key]
+        except KeyError:
             return None
 
     def count(self, cls=None):
-        '''class (optional)'''
-        return (len(self.all(cls)))
+        """Count current number of class instances"""
+        return len(self.all(cls))
