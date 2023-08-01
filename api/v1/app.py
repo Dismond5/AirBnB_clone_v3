@@ -2,9 +2,9 @@
 """
 creating blueprint for flask
 """
-from flask import Flask, Blueprint,  make_response, jsonify
+from flask import Flask, make_response, jsonify
 from models import storage
-import os
+from os import getenv
 from flask_cors import CORS
 from api.v1.views import app_views
 
@@ -31,6 +31,6 @@ def page_not_found(error):
 
 
 if __name__ == "__main__":
-    hosts = os.getenv("HBNB_API_HOST", default='0.0.0.0')
-    ports = int(os.getenv("HBNB_API_PORT", default=5000))
-    app.run(host=hosts, port=ports, threaded=True)
+    hosts = getenv("HBNB_API_HOST", "0.0.0.0")
+    ports = getenv ("HBNB_API_PORT", "5000")
+    app.run(host=hosts, port=ports, threaded=True, debug=True)
