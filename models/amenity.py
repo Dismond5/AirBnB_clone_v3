@@ -12,6 +12,7 @@ class Amenity(BaseModel, Base):
     """Representation of Amenity """
     if models.storage_t == 'db':
         __tablename__ = 'amenities'
+        __table_args__ = {'mysql_default_charset': 'latin1'}
         name = Column(String(128), nullable=False)
     else:
         name = ""
@@ -19,3 +20,4 @@ class Amenity(BaseModel, Base):
     def __init__(self, *args, **kwargs):
         """initializes Amenity"""
         super().__init__(*args, **kwargs)
+

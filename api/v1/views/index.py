@@ -3,6 +3,7 @@
 an endpoint that retrieves the number of each objects by type
 """
 from flask import jsonify
+from models import classes
 from models import storage
 from api.v1.views import app_views
 
