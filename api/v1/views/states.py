@@ -6,7 +6,7 @@ that handles all default RestFul API actions
 from flask import Flask, jsonify, abort, request
 from api.v1.views import app_views
 from models import storage
-from models import State
+from models.state import State
 
 
 @app_views.route('/states/', methods=["GET"])
