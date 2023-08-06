@@ -71,12 +71,15 @@ class FileStorage:
 
     def get(self, cls, id):
         """Method to retrieve one specific object"""
-        key = cls.__name__ + "." + id
-        try:
-            return self.all()[key]
-        except KeyError:
+        if cls and id:
+            key_name = "{}.{}".format(cls.__name__, id)
+            return self.__objects.get(key_name)
+        else:
             return None
 
     def count(self, cls=None):
         """Count current number of class instances"""
-        return len(self.all(cls))
+        if cls is None:
+            return len(self.all())
+        else:
+            return len(self.all(cls))
