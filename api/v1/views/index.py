@@ -1,33 +1,24 @@
 #!/usr/bin/python3
-"""
-an endpoint that retrieves the number of each objects by type
-"""
-from flask import jsonify
-from models import storage
+"""Module for route"""
+
+
 from api.v1.views import app_views
+from flask import jsonify
+import models
 
 
-@app_views.route("/status")
+@app_views.route('/status', methods=["GET"])
 def status():
-    """
-    return status in json
-    """
-    stat = {"status": "OK"}
-    return (jsonify(stat))
+    """Return /status api route"""
+    return jsonify({"status": "OK"})
 
 
-@app_views.route("/stats")
+@app_views.route('/stats', methods=["GET"])
 def stats():
-    """
-    endpoint that retrieves number of obj by type
-    """
-    dic = {"amenities": 0, "cities": 0, "places": 0,
-           "reviews": 0, "states": 0, "users": 0}
-    cls = ["Amenity", "City", "Place", "Review", "State", "User"]
-    st = ["amenities", "cities", "places", "reviews", "states", "users"]
-    for c in range(len(cls)):
-        try:
-            dic[st[c]] = storage.count(cls[c])
-        except Exception:
-            continue
-    return (jsonify(dic))
+    """Return /stats api route"""
+    return jsonify({"amenities": models.storage.count("Amenity"),
+                    "cities": models.storage.count("City"),
+                    "places": models.storage.count("Place"),
+                    "reviews": models.storage.count("Review"),
+                    "states": models.storage.count("State"),
+                    "users": models.storage.count("User")})
