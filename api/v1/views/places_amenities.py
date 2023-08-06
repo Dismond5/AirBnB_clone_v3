@@ -1,84 +1,82 @@
 #!/usr/bin/python3
-"""
-Create new view for link b/w place and amenities objects that
-handles all default RestFul API actions
-"""
+"""Create new view for link b/w place and amenities """
 from api.v1.views import app_views
-from flask import jsonify, abort, request
+from flask import jsonify, abort, request, make_response
 from models import storage
 from models.place import Place
 from models.amenity import Amenity
 from os import getenv
+from api.v1.views import *
+
+view = Amenity
+parent_view = Place
 
 
-@app_views.route("/places/<place_id>/amenities", methods=["GET"],
-                 strict_slashes=False)
-def amenities_places(place_id):
+@app_views.route('/places/<place_id>/amenities', strict_slashes=False,
+                 methods=["GET"])
+def get_place_amenities(place_id):
     """
-    retrieves all amenities by place
+    Get a list of all amenites associated with place
+    (place_id)
     """
-    place = storage.get("Place", place_id)
-    if place is None:
-        abort(404)
-    amenity = []
-    if getenv('HBNB_TYPE_STORAGE') == 'db':
-        place_amen = place.amenities
-        for amen in place_amen:
-            amenity.append(amen.to_dict())
+    return get_view_parent(parent_view, place_id, "amenities")
+
+
+@app_views.route('/places/<place_id>/amenities/<amenity_id>',
+                 strict_slashes=False, methods=['DELETE', 'POST'])
+def amenity_in_process(place_id, amenity_id):
+    """
+    Identify method
+    """
+    if request.method == "DELETE":
+        return delete_place_amenity(place_id, amenity_id)
     else:
-        place_amen = place.amenity_ids
-        for am in place_amen:
-            amenity.append(storage.get('Amenity', am).to_dict())
-    return jsonify(amenity)
+        return post_place_amenity(place_id, amenity_id)
 
 
-@app_views.route("/places/<place_id>/amenities/<amenity_id>",
-                 methods=["DELETE"], strict_slashes=False)
-def delete_obj(place_id, amenity_id):
+def delete_place_amenity(place_id, amenity_id):
     """
-    Delete place amenity obj
+    Delete (amenity_id) associated with
+    place identified by (place_id)
     """
-    place = storage.get("Place", place_id)
-    if place is None:
+    place = storage.get(parent_view, place_id)
+    amenity = storage.get(view, amenity_id)
+    if place is None or amenity is None:
         abort(404)
-    amenity = storage.get("Amenity", amenity_id)
-    if amenity is None:
+    if getenv("HBNB_TYPE_STORAGE") == "db":
+        if amenity in place.amenities:
+            storage.delete(amenity)
+            storage.save()
+            return jsonify({})
         abort(404)
-    if getenv('HBNB_TYPE_STORAGE') == 'db':
-        place_amen = place.amenities
-        if amenity not in place_amen:
-            abort(404)
-        place_amen.remove(amenity)
     else:
-        place_amen = place.amenity_ids
-        if amenity_id not in place_amen:
-            abort(404)
-        place_amen.remove(amenity_id)
-    place.save()
-    return jsonify({}), 200
+        if amenity.id in place.amenity_ids:
+            storage.delete(amenity)
+            storage.save()
+            return jsonify({})
+        abort(404)
 
 
-@app_views.route("/places/<place_id>/amenities/<amenity_id>", methods=["POST"],
-                 strict_slashes=False)
-def post_pl_am(place_id, amenity_id):
+def post_place_amenity(place_id, amenity_id):
     """
-    link pl to amen
+    Delete amenity (amenity_id) associated with
+    place (place_id)
     """
-    place = storage.get("Place", place_id)
-    if place is None:
+    place = storage.get(parent_view, place_id)
+    amenity = storage.get(view, amenity_id)
+    if place is None or amenity is None:
         abort(404)
-    amenity = storage.get("Amenity", amenity_id)
-    if amenity is None:
-        abort(404)
-    if getenv('HBNB_TYPE_STORAGE') == 'db':
-        place_amen = place.amenities
-        if amenity in place_amen:
-            return jsonify(amenity.to_dict()), 200
-        place_amen.append(amenity)
+    if getenv("HBNB_TYPE_STORAGE") == "db":
+        if amenity in place.amenities:
+            storage.save()
+            return jsonify(amenity.to_dict())
+        else:
+            place.amenities.append(amenity)
     else:
-        place_amen = place.amenity_ids
-        if amenity_id in place_amen:
-            return jsonify(amenity.to_dict()), 200
-        place_amen.append(amenity_id)
-    place.save()
+        if amenity_id in place.amenity_ids:
+            storage.save()
+            return jsonify(amenity.to_dict())
+        else:
+            place.amenity_ids.append(amenity.id)
+    storage.save()
     return jsonify(amenity.to_dict()), 201
