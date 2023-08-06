@@ -22,8 +22,7 @@ def teardown_appcontext(self):
 
 
 @app.errorhandler(404)
-def page_not_found(error):
-    def not_found(error):
+def not_found(error):
     """Create a handler for 404 errors"""
     return make_response(jsonify({'error': 'Not found'}), 404)
 
